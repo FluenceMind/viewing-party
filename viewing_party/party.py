@@ -64,47 +64,59 @@ def get_most_watched_genre(user_data):
 
 # ------------- WAVE 3 --------------------
 
-# Made the code DRY later.
+def get_titles(watched, from_friends=False):
+    """
+    Return a set of titles the user or friends have watched.
+    """
+    titles = set()
+    if from_friends:
+        for movie in watched:
+            for movie in movie["watched"]:
+                titles.add(movie["title"])
+    else:
+        for movie in watched:
+            titles.add(movie["title"])
+    
+    return titles
+
 def get_unique_watched(user_data):
-    # user_data = {'watched': [{...}, {...}, {...}, {...}, {...}, {...}], 
-    # 'friends': [{...}, {...}]}
-    if not user_data["watched"]:
+    """
+    Movies the user watched that none of the friends watched.
+    """
+    user_watched = user_data.get("watched", [])
+
+    if not user_watched:
         return []
     
-    friends_movies = []
     unique_movies = []
-
-    user_watched = user_data["watched"]
-    friends_watched = user_data["friends"]
-
-    for movie_friends in friends_watched:
-        for movie in movie_friends["watched"]:
-            friends_movies.append(movie["title"])
-
-    for movie_user in user_watched:
-        movie_title = movie_user["title"]
-        if movie_title not in friends_movies:
-            unique_movies.append(movie_user)
+    friends_watched = user_data.get("friends", [])
+    friends_movies_titles = get_titles(friends_watched, True)
+    
+    for movie in user_watched:
+        if movie["title"] not in friends_movies_titles:
+            unique_movies.append(movie)
 
     return unique_movies
 
+
 def get_friends_unique_watched(user_data):
-    
-    user_movies = []
+    """
+    Movies at least one friend watched that the user hasn't watched.
+    Return each title at most once (first occurrence kept).
+    """
     unique_movies = []
 
-    user_watched = user_data["watched"]
-    friends_watched = user_data["friends"]
+    user_watched = user_data.get("watched", [])
+    friends_watched = user_data.get("friends", [])
 
-    for movie in user_watched:
-            user_movies.append(movie["title"])
-    
-    titles = []
+    user_movies_titles = get_titles(user_watched)
 
+    titles = set()
     for movies in friends_watched:
         for movie in movies["watched"]:
-            if movie["title"] not in user_movies and movie["title"] not in titles:
-                titles.append(movie["title"])
+            title = movie["title"]
+            if  title not in user_movies_titles and title not in titles:
+                titles.add(movie["title"])
                 unique_movies.append(movie)
     
     return unique_movies

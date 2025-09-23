@@ -49,13 +49,24 @@ def test_friends_unique_movies_not_duplicated():
     amandas_data = clean_wave_3_data()
     amandas_data["friends"][0]["watched"].append(INTRIGUE_3)
 
+    expected_titles = {
+    "Zero Dark Python",
+    "It Came from the Stack Trace",
+    "The Programmer: An Unexpected Stack Trace"
+    }
+
     # Act
     friends_unique_movies = get_friends_unique_watched(amandas_data)
+    print(friends_unique_movies)
 
     # Assert
     assert len(friends_unique_movies) == 3
     
-    # add test here
+    # Our Assert
+    titles = set()
+    for movie in friends_unique_movies:
+        titles.add(movie["title"])
+    assert titles == expected_titles
 
 # @pytest.mark.skip()
 def test_friends_not_unique_movies():
