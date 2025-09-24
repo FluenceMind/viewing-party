@@ -51,6 +51,7 @@ def watch_movie(user_data, title):
             # Move the movie from watchlist to watched
             moved = watchlist.pop(i)
             user_data["watched"].append(moved)
+            break
     return user_data
 
 
