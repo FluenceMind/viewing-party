@@ -125,6 +125,38 @@ def get_friends_unique_watched(user_data):
 # ------------- WAVE 4 --------------------
 # -----------------------------------------
 
+def get_available_recs(user_data):
+    """
+    Return a list of movie dicts recommended to the user.
+    A movie is recommended if:
+        - At least one friend watched it,
+        - The user has NOT watched it,
+        - The movie's host is in the user's subscriptions.
+    """
+    recommendations = []
+
+    friends_watched = user_data.get("friends", [])
+    user_watched = user_data.get("watched", [])
+    subscriptions_set = set(user_data["subscriptions"])
+
+    user_movies_titles = get_titles(user_watched)
+
+    friends_movie_titles = set()
+    
+    for friend in friends_watched:
+        for movie in friend.get("watched", []):
+            title = movie["title"]
+            host = movie["host"] 
+            if (
+                title not in user_movies_titles 
+                and title not in friends_movie_titles
+                and host in subscriptions_set
+            ):
+                    recommendations.append(movie)
+                    friends_movie_titles.add(movie["title"])
+    return recommendations
+
+
 # -----------------------------------------
 # ------------- WAVE 5 --------------------
 # -----------------------------------------
