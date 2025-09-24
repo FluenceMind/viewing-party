@@ -104,12 +104,156 @@ def get_most_watched_genre(user_data):
 # ------------- WAVE 3 --------------------
 # -----------------------------------------
 
-        
+
+def get_titles(watched, from_friends=False):
+    """
+    Return a set of titles the user or friends have watched.
+    """
+    titles = set()
+    if from_friends:
+        for movie in watched:
+            for movie in movie["watched"]:
+                titles.add(movie["title"])
+    else:
+        for movie in watched:
+            titles.add(movie["title"])
+    
+    return titles
+
+def get_unique_watched(user_data):
+    """
+    Movies the user watched that none of the friends watched.
+    """
+    user_watched = user_data.get("watched", [])
+
+    if not user_watched:
+        return []
+    
+    unique_movies = []
+    friends_watched = user_data.get("friends", [])
+    friends_movies_titles = get_titles(friends_watched, True)
+    
+    for movie in user_watched:
+        if movie["title"] not in friends_movies_titles:
+            unique_movies.append(movie)
+
+    return unique_movies
+
+
+def get_friends_unique_watched(user_data):
+    """
+    Movies at least one friend watched that the user hasn't watched.
+    Return each title at most once (first occurrence kept).
+    """
+    unique_movies = []
+
+    user_watched = user_data.get("watched", [])
+    friends_watched = user_data.get("friends", [])
+
+    user_movies_titles = get_titles(user_watched)
+
+    titles = set()
+    for movies in friends_watched:
+        for movie in movies["watched"]:
+            title = movie["title"]
+            if  title not in user_movies_titles and title not in titles:
+                titles.add(movie["title"])
+                unique_movies.append(movie)
+    
+    return unique_movies
+    
 # -----------------------------------------
 # ------------- WAVE 4 --------------------
 # -----------------------------------------
+
+def get_available_recs(user_data):
+    """
+    Return a list of movie dicts recommended to the user.
+    A movie is recommended if:
+        - At least one friend watched it,
+        - The user has NOT watched it,
+        - The movie's host is in the user's subscriptions.
+    """
+    recommendations = []
+
+    friends_watched = user_data.get("friends", [])
+    user_watched = user_data.get("watched", [])
+    subscriptions_set = set(user_data["subscriptions"])
+
+    user_movies_titles = get_titles(user_watched)
+
+    friends_movie_titles = set()
+    
+    for friend in friends_watched:
+        for movie in friend.get("watched", []):
+            title = movie["title"]
+            host = movie["host"] 
+            if (
+                title not in user_movies_titles 
+                and title not in friends_movie_titles
+                and host in subscriptions_set
+            ):
+                    recommendations.append(movie)
+                    friends_movie_titles.add(movie["title"])
+
+    return recommendations
 
 # -----------------------------------------
 # ------------- WAVE 5 --------------------
 # -----------------------------------------
 
+
+def get_new_rec_by_genre(user_data):
+    """
+    Recommend movies by the user's most-watched genre.
+    Conditions:
+    - user has NOT watched the movie
+    - at least one friend HAS watched it
+    - movie["genre"] == user's most frequent genre
+    No .get() used. Do not modify user_data.
+    """
+    favorite_genre = get_most_watched_genre(user_data)
+    if not favorite_genre:
+        return []
+
+    # Titles the user already watched
+    user_titles = get_titles(user_data["watched"])
+
+    recs = []
+    seen_titles = set()  # avoid duplicates
+    for friend in user_data["friends"]:
+        for movie in friend["watched"]:
+            title = movie["title"]
+            genre = movie["genre"]
+            if (
+                title not in user_titles 
+                and title not in seen_titles 
+                and genre == favorite_genre
+            ):
+                recs.append(movie)
+                seen_titles.add(title)
+
+    return recs
+
+
+def get_rec_from_favorites(user_data):
+    """
+    Recommend from the user's favorites only if no friends watched them.
+    Conditions:
+    - movie is in user_data["favorites"]
+    - none of the friends have watched it
+    No .get() used. Do not modify user_data.
+    """
+    # All titles watched by friends
+    friends_titles = get_titles(user_data["friends"], True)
+
+    # Favorites not watched by any friend (no duplicates)
+    recs = []
+    seen_titles = set()
+    for movie in user_data["favorites"]:
+        title = movie["title"]
+        if title not in friends_titles and title not in seen_titles:
+            recs.append(movie)
+            seen_titles.add(title)
+
+    return recs
