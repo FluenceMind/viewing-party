@@ -45,13 +45,13 @@ def watch_movie(user_data, title):
     """
 
     watchlist = user_data.get("watchlist", [])
-    for i in range(len(watchlist)):
+    for i in range(len(watchlist)): 
         movie = watchlist[i]
         if movie.get("title") == title:
             # Move the movie from watchlist to watched
             moved = watchlist.pop(i)
             user_data["watched"].append(moved)
-            break
+            break 
     return user_data
 
 
@@ -264,11 +264,11 @@ def get_rec_from_favorites(user_data):
 
     # Favorites not watched by any friend (no duplicates)
     recs = []
-    seen_titles = set()
+    added_titles = set()
     for movie in user_data["favorites"]:
         title = movie["title"]
-        if title not in friends_movie_titles and title not in seen_titles:
+        if title not in friends_movie_titles and title not in added_titles:
             recs.append(movie)
-            seen_titles.add(title)
+            added_titles.add(title)
 
     return recs
