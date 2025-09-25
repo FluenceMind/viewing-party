@@ -65,6 +65,7 @@ def get_watched_avg_rating(user_data):
     Average rating of movies in user_data["watched"].
     If the list is empty, return 0.0.
     """
+    
     total_ratings = 0.0
 
     watched = user_data.get("watched", [])
@@ -112,6 +113,7 @@ def get_titles(watched, from_friends=False):
     """
     Return a set of titles the user or friends have watched.
     """
+    
     titles = set()
     if from_friends:
         for friend in watched:
@@ -128,6 +130,7 @@ def get_unique_watched(user_data):
     """
     Movies the user watched that none of the friends watched.
     """
+    
     user_watched = user_data.get("watched", [])
 
     if not user_watched:
@@ -149,6 +152,7 @@ def get_friends_unique_watched(user_data):
     Movies at least one friend watched that the user hasn't watched.
     Return each title at most once (first occurrence kept).
     """
+   
     unique_movies = []
 
     user_watched = user_data.get("watched", [])
@@ -180,7 +184,8 @@ def get_available_recs(user_data):
         - The user has NOT watched it,
         - The movie's host is in the user's subscriptions.
     """
-    recommendations = []
+    
+    recs = []
 
     friends_watched = user_data.get("friends", [])
     user_watched = user_data.get("watched", [])
@@ -199,10 +204,10 @@ def get_available_recs(user_data):
                 and title not in added_titles  # to avoid duplicates
                 and host in subscriptions_set
             ):
-                recommendations.append(movie)
+                recs.append(movie)
                 added_titles.add(movie["title"])
 
-    return recommendations
+    return recs
 
 
 # -----------------------------------------
@@ -219,6 +224,7 @@ def get_new_rec_by_genre(user_data):
     - movie["genre"] == user's most frequent genre
     No .get() used. Do not modify user_data.
     """
+    
     favorite_genre = get_most_watched_genre(user_data)
 
     if not favorite_genre:
@@ -252,6 +258,7 @@ def get_rec_from_favorites(user_data):
     - none of the friends have watched it
     No .get() used. Do not modify user_data.
     """
+    
     # All titles watched by friends
     friends_movie_titles = get_titles(user_data["friends"], True)
 
