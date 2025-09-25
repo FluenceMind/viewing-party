@@ -1,21 +1,19 @@
 # ------------- WAVE 1 --------------------
 
+
 def create_movie(title, genre, rating):
     """
     If all three values are truthy, return a movie dictionary.
     Otherwise, return None.
     """
-    
+
     if not title or not genre or not rating:
         return None
-        
-    return {
-        "title": title,
-        "genre": genre,
-        "rating": rating
-    }
 
-def add_to_watched(user_data, movie):    
+    return {"title": title, "genre": genre, "rating": rating}
+
+
+def add_to_watched(user_data, movie):
     """
     Add the given movie to the user's 'watched' list.
     Return the same user_data.
@@ -24,6 +22,7 @@ def add_to_watched(user_data, movie):
 
     user_data["watched"].append(movie)
     return user_data
+
 
 def add_to_watchlist(user_data, movie):
     """
@@ -34,6 +33,7 @@ def add_to_watchlist(user_data, movie):
 
     user_data["watchlist"].append(movie)
     return user_data
+
 
 def watch_movie(user_data, title):
     """
@@ -59,6 +59,7 @@ def watch_movie(user_data, title):
 # ------------- WAVE 2 --------------------
 # -----------------------------------------
 
+
 def get_watched_avg_rating(user_data):
     """
     Average rating of movies in user_data["watched"].
@@ -69,14 +70,14 @@ def get_watched_avg_rating(user_data):
     watched = user_data.get("watched", [])
     if not watched:
         return total_ratings
-    
+
     for movie in watched:
         rating = movie["rating"]
         total_ratings += rating
-    
-    ave_rating = total_ratings / len(watched)
 
-    return ave_rating
+    avg_rating = total_ratings / len(watched)
+
+    return avg_rating
 
 
 def get_most_watched_genre(user_data):
@@ -87,8 +88,8 @@ def get_most_watched_genre(user_data):
 
     if not user_data["watched"]:
         return None
-    
-    genre_count = {} 
+
+    genre_count = {}
     max_count = -1
     most_watched_genre = None
 
@@ -101,6 +102,7 @@ def get_most_watched_genre(user_data):
 
     return most_watched_genre
 
+
 # -----------------------------------------
 # ------------- WAVE 3 --------------------
 # -----------------------------------------
@@ -112,14 +114,15 @@ def get_titles(watched, from_friends=False):
     """
     titles = set()
     if from_friends:
-        for movie in watched:
-            for movie in movie["watched"]:
+        for friend in watched:
+            for movie in friend["watched"]:
                 titles.add(movie["title"])
     else:
         for movie in watched:
             titles.add(movie["title"])
-    
+
     return titles
+
 
 def get_unique_watched(user_data):
     """
@@ -129,13 +132,13 @@ def get_unique_watched(user_data):
 
     if not user_watched:
         return []
-    
+
     unique_movies = []
     friends_watched = user_data.get("friends", [])
-    friends_movies_titles = get_titles(friends_watched, True)
-    
+    friends_movie_titles = get_titles(friends_watched, True)
+
     for movie in user_watched:
-        if movie["title"] not in friends_movies_titles:
+        if movie["title"] not in friends_movie_titles:
             unique_movies.append(movie)
 
     return unique_movies
@@ -151,21 +154,23 @@ def get_friends_unique_watched(user_data):
     user_watched = user_data.get("watched", [])
     friends_watched = user_data.get("friends", [])
 
-    user_movies_titles = get_titles(user_watched)
+    user_movie_titles = get_titles(user_watched)
 
-    titles = set()
-    for movies in friends_watched:
-        for movie in movies["watched"]:
+    added_titles = set()
+    for friend in friends_watched:
+        for movie in friend["watched"]:
             title = movie["title"]
-            if  title not in user_movies_titles and title not in titles:
-                titles.add(movie["title"])
+            if title not in user_movie_titles and title not in added_titles:
+                added_titles.add(movie["title"])
                 unique_movies.append(movie)
-    
+
     return unique_movies
-    
+
+
 # -----------------------------------------
 # ------------- WAVE 4 --------------------
 # -----------------------------------------
+
 
 def get_available_recs(user_data):
     """
@@ -181,23 +186,24 @@ def get_available_recs(user_data):
     user_watched = user_data.get("watched", [])
     subscriptions_set = set(user_data["subscriptions"])
 
-    user_movies_titles = get_titles(user_watched)
+    user_movie_titles = get_titles(user_watched)
 
-    friends_movie_titles = set()
-    
+    added_titles = set()
+
     for friend in friends_watched:
         for movie in friend.get("watched", []):
             title = movie["title"]
-            host = movie["host"] 
+            host = movie["host"]
             if (
-                title not in user_movies_titles 
-                and title not in friends_movie_titles
+                title not in user_movie_titles
+                and title not in added_titles  # to avoid duplicates
                 and host in subscriptions_set
             ):
-                    recommendations.append(movie)
-                    friends_movie_titles.add(movie["title"])
+                recommendations.append(movie)
+                added_titles.add(movie["title"])
 
     return recommendations
+
 
 # -----------------------------------------
 # ------------- WAVE 5 --------------------
@@ -214,11 +220,12 @@ def get_new_rec_by_genre(user_data):
     No .get() used. Do not modify user_data.
     """
     favorite_genre = get_most_watched_genre(user_data)
+
     if not favorite_genre:
         return []
 
     # Titles the user already watched
-    user_titles = get_titles(user_data["watched"])
+    user_movie_titles = get_titles(user_data["watched"])
 
     recs = []
     seen_titles = set()  # avoid duplicates
@@ -227,8 +234,8 @@ def get_new_rec_by_genre(user_data):
             title = movie["title"]
             genre = movie["genre"]
             if (
-                title not in user_titles 
-                and title not in seen_titles 
+                title not in user_movie_titles
+                and title not in seen_titles
                 and genre == favorite_genre
             ):
                 recs.append(movie)
@@ -246,14 +253,14 @@ def get_rec_from_favorites(user_data):
     No .get() used. Do not modify user_data.
     """
     # All titles watched by friends
-    friends_titles = get_titles(user_data["friends"], True)
+    friends_movie_titles = get_titles(user_data["friends"], True)
 
     # Favorites not watched by any friend (no duplicates)
     recs = []
     seen_titles = set()
     for movie in user_data["favorites"]:
         title = movie["title"]
-        if title not in friends_titles and title not in seen_titles:
+        if title not in friends_movie_titles and title not in seen_titles:
             recs.append(movie)
             seen_titles.add(title)
 
