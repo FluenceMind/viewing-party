@@ -17,7 +17,7 @@ def test_create_successful_movie():
     # Assert
     assert new_movie["title"] == MOVIE_TITLE_1
     assert new_movie["genre"] == GENRE_1
-    assert new_movie["rating"] == pytest.approx(RATING_1)
+    assert new_movie["rating"] == RATING_1
 
 # @pytest.mark.skip()
 def test_create_no_title_movie():
@@ -183,12 +183,10 @@ def test_moves_movie_from_watchlist_to_watched():
     assert len(updated_data["watchlist"]) == 1
     assert len(updated_data["watched"]) == 2
     
-    # Our assertions (Check that exactly movie_to_watch was moved)
     assert movie_to_watch not in updated_data["watchlist"]
     assert movie_to_watch in updated_data["watched"]
-    # Additionally: the other elements stayed in place
-    assert FANTASY_1 in updated_data["watchlist"]   # it should remain in watchlist
-    assert FANTASY_2 in updated_data["watched"]     # already watched movie should not disappear
+    assert FANTASY_1 in updated_data["watchlist"]  
+    assert FANTASY_2 in updated_data["watched"]    
 
 # @pytest.mark.skip()
 def test_does_nothing_if_movie_not_in_watchlist():
